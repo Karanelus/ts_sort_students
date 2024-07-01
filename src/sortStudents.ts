@@ -7,11 +7,11 @@ export interface Student {
 }
 
 export enum SortType {
-  Name = 'name',
-  Surname = 'surname',
-  Age = 'age',
-  Married = 'married',
-  AverageGrade = 'grades',
+  Name = 'Name',
+  Surname = 'Surname',
+  Age = 'Age',
+  Married = 'Married',
+  AverageGrade = 'Grades',
 }
 
 // create SortOrder type
@@ -22,44 +22,47 @@ export function sortStudents(
   sortBy: SortType,
   order: SortOrder,
 ): Student[] {
-  const arr = [...students];
-  const isAsc = order === 'asc';
+  const studentsCopy = [...students];
+  const calculateAverageGrade = (grades: number[]): number => {
+    return grades.reduce((sum, grade) => sum + grade, 0) / grades.length;
+  };
 
-  if (sortBy === 'age') {
-    return isAsc
-      ? arr.sort((a: Student, b: Student) => a[sortBy] - b[sortBy])
-      : arr.sort((a: Student, b: Student) => b[sortBy] - a[sortBy]);
-  }
+  studentsCopy.sort((a, b) => {
+    let comparison = 0;
 
-  if (sortBy === 'grades') {
-    const avrGrade = (grades: number[]): number => {
-      return grades.reduce((sum, grade) => sum + grade, 0) / grades.length;
-    };
+    switch (sortBy) {
+      case SortType.Name:
+        comparison = a.name.localeCompare(b.name);
+        break;
+      case SortType.Surname:
+        comparison = a.surname.localeCompare(b.surname);
+        break;
+      case SortType.Age:
+        comparison = a.age - b.age;
+        break;
+      case SortType.Married:
+        if (a.married === b.married) {
+          comparison = 0;
+          break;
+        }
 
-    return isAsc
-      ? arr.sort(
-        (a: Student, b: Student) => avrGrade(a[sortBy]) - avrGrade(b[sortBy]),
-      )
-      : arr.sort(
-        (a: Student, b: Student) => avrGrade(b[sortBy]) - avrGrade(a[sortBy]),
-      );
-  }
+        if (a.married) {
+          comparison = 1;
+          break;
+        }
 
-  if (sortBy === 'married') {
-    return arr.sort((a: Student, b: Student) => {
-      if (a[sortBy] === b[sortBy]) {
-        return 0;
-      }
+        comparison = -1;
+        break;
+      case SortType.AverageGrade:
+        comparison
+        = calculateAverageGrade(a.grades) - calculateAverageGrade(b.grades);
+        break;
 
-      if (a[sortBy]) {
-        return isAsc ? 1 : -1;
-      }
+      default: break;
+    }
 
-      return isAsc ? -1 : 1;
-    });
-  }
+    return order === 'asc' ? comparison : -comparison;
+  });
 
-  return isAsc
-    ? arr.sort((a: Student, b: Student) => a[sortBy].localeCompare(b[sortBy]))
-    : arr.sort((a: Student, b: Student) => b[sortBy].localeCompare(a[sortBy]));
+  return studentsCopy;
 }
